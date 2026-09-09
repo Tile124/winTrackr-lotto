@@ -29,6 +29,8 @@ export interface ScratchoffFullData {
 const baseUrl = 'http://localhost:3000/api/'
 const getScratchoffsUrl = baseUrl + 'get-scratchoffs';
 const addScratchoffUrl = baseUrl + 'add-scratchoff';
+const updateScratchoffUrl = baseUrl + 'update-scratchoff';
+const deleteScratchoffUrl = baseUrl + 'delete-scratchoff';
 
 const getScratchoffsRequestOptions = {                                                                                                                                                                                 
   headers: new HttpHeaders({
@@ -74,5 +76,20 @@ export class ScratchOffEntryService {
     .subscribe((res)=>{
       console.log(res)
     });
+  }
+
+  updateEntry(id: number, entry: ScratchOffEntry) {
+    const scratchoffData = {
+      Id: id,
+      Name: entry.name,
+      GameId: entry.id,
+      Prize: entry.winAmount,
+      Date: entry.date,
+    };
+    return this.http.post(updateScratchoffUrl, scratchoffData, httpOptions).pipe(catchError(this.handleError));
+  }
+
+  deleteEntry(id: number) {
+    return this.http.post(deleteScratchoffUrl, { Id: id }, httpOptions).pipe(catchError(this.handleError));
   }
 }

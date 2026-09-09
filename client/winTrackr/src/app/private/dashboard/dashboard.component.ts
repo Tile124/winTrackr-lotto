@@ -7,6 +7,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from 'app/core/services/alert.service';
 
 export interface Entry {
+  entryId: number | undefined;
   date: string | undefined;
   id: string | undefined;
   name: string | undefined;
@@ -20,9 +21,10 @@ export interface Entry {
 })
 export class DashboardComponent implements OnInit {
   message: string = "Loading...";
-  displayedColumns: string[] = ['date', 'id', 'name', 'winAmount'];
+  displayedColumns: string[] = ['date', 'id', 'name', 'winAmount', 'actions'];
   entries: MatTableDataSource<Entry>;
   entryForm: FormGroup;
+  editingEntryId: number | undefined;
 
   constructor(
     private authService: AuthService,
@@ -66,7 +68,7 @@ export class DashboardComponent implements OnInit {
         const entries: Entry[] = [];
         for (let i = 0; i < resEntries.length; i++) {
           var entry = resEntries.at(i);
-          entries.push({ date: entry?.Date, id: entry?.GameId, name: entry?.Name, winAmount: entry?.Prize });
+          entries.push({ entryId: entry?.Id, date: entry?.Date, id: entry?.GameId, name: entry?.Name, winAmount: entry?.Prize });
         }
         this.entries.data = entries;
       });
@@ -74,12 +76,27 @@ export class DashboardComponent implements OnInit {
 
   onSubmit(): void {
     const newEntry: Entry = {
+      entryId: this.editingEntryId,
       date: this.entryForm.get('date')?.value,
       id: this.entryForm.get('id')?.value,
       name: this.entryForm.get('name')?.value,
       winAmount: this.entryForm.get('winAmount')?.value,
     };
-    
+
+    if (this.editingEntryId !== undefined) {
+      this.scratchOffEntryService.updateEntry(this.editingEntryId, newEntry)
+        .subscribe({
+          next: () => {
+            this.cancelEdit();
+            this.refreshEntries();
+          },
+          error: () => {
+            this.alertService.showAlert('Failed to update entry. Please try again later.');
+          }
+        });
+      return;
+    }
+
     // Send the newEntry data to the backend to save it in the user's data
     this.scratchOffEntryService.addEntry(newEntry);
 
@@ -90,6 +107,45 @@ export class DashboardComponent implements OnInit {
 
   clearForm(): void {
   this.entryForm.reset();
+  }
+
+  // Populate the form with an existing entry's data and switch the form to update mode
+  editEntry(entry: Entry): void {
+    this.editingEntryId = entry.entryId;
+    this.entryForm.setValue({
+      name: entry.name,
+      id: entry.id,
+      winAmount: entry.winAmount,
+      date: entry.date,
+    });
+  }
+
+  // Exit update mode without saving changes
+  cancelEdit(): void {
+    this.editingEntryId = undefined;
+    this.clearForm();
+  }
+
+  deleteEntry(entry: Entry): void {
+    if (entry.entryId === undefined) {
+      return;
+    }
+    if (!confirm(`Delete the "${entry.name}" entry?`)) {
+      return;
+    }
+
+    this.scratchOffEntryService.deleteEntry(entry.entryId)
+      .subscribe({
+        next: () => {
+          if (this.editingEntryId === entry.entryId) {
+            this.cancelEdit();
+          }
+          this.refreshEntries();
+        },
+        error: () => {
+          this.alertService.showAlert('Failed to delete entry. Please try again later.');
+        }
+      });
   }
 
   // Event handler for generating tax report

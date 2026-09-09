@@ -269,3 +269,118 @@ func AddScratchoffHandler(rw http.ResponseWriter, r *http.Request) {
 	// If the session is valid, return the welcome message to the user
 	rw.WriteHeader(http.StatusOK)
 }
+
+func UpdateScratchoffHandler(rw http.ResponseWriter, r *http.Request) {
+	// decode request body
+	updateData := &db.ScratchoffUpdateData{}
+	err := json.NewDecoder(r.Body).Decode(updateData)
+	if err != nil {
+		log.Printf("verbose error info: %#v", err)
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	prize, err := strconv.ParseInt(updateData.Prize, 10, 64)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// We can obtain the session token from the requests cookies, which come with every request
+	c, err := r.Cookie("sessionToken")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			// If the cookie is not set, return an unauthorized status
+			rw.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		// For any other type of error, return a bad request status
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	sessionToken := c.Value
+
+	// We then get the session from our session map
+	userSession, exists := sessions[sessionToken]
+	if !exists {
+		// If the session token is not present in session map, return an unauthorized error
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	// If the session is present, bgitut has expired, we can delete the session, and return
+	// an unauthorized status
+	if userSession.isExpired() {
+		delete(sessions, sessionToken)
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	err = db.UpdateScratchoff(
+		updateData.Id,
+		userSession.user.UserID,
+		updateData.Name,
+		updateData.GameID,
+		prize,
+		updateData.Date)
+	if err != nil {
+		if err == db.ErrScratchoffNotFound {
+			rw.WriteHeader(http.StatusNotFound)
+			return
+		}
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	rw.WriteHeader(http.StatusOK)
+}
+
+func DeleteScratchoffHandler(rw http.ResponseWriter, r *http.Request) {
+	// decode request body
+	deleteData := &db.ScratchoffDeleteData{}
+	err := json.NewDecoder(r.Body).Decode(deleteData)
+	if err != nil {
+		log.Printf("verbose error info: %#v", err)
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// We can obtain the session token from the requests cookies, which come with every request
+	c, err := r.Cookie("sessionToken")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			// If the cookie is not set, return an unauthorized status
+			rw.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		// For any other type of error, return a bad request status
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	sessionToken := c.Value
+
+	// We then get the session from our session map
+	userSession, exists := sessions[sessionToken]
+	if !exists {
+		// If the session token is not present in session map, return an unauthorized error
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	// If the session is present, bgitut has expired, we can delete the session, and return
+	// an unauthorized status
+	if userSession.isExpired() {
+		delete(sessions, sessionToken)
+		rw.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	err = db.DeleteScratchoff(deleteData.Id, userSession.user.UserID)
+	if err != nil {
+		if err == db.ErrScratchoffNotFound {
+			rw.WriteHeader(http.StatusNotFound)
+			return
+		}
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	rw.WriteHeader(http.StatusOK)
+}

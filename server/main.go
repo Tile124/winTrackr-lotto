@@ -27,6 +27,8 @@ func main() {
 	apiRouter := mainRouter.PathPrefix("/api").Subrouter()
 	apiRouter.HandleFunc("/get-scratchoffs", auth.GetScratchoffsHandler)
 	apiRouter.HandleFunc("/add-scratchoff", auth.AddScratchoffHandler)
+	apiRouter.HandleFunc("/update-scratchoff", auth.UpdateScratchoffHandler)
+	apiRouter.HandleFunc("/delete-scratchoff", auth.DeleteScratchoffHandler)
 
 	// cors config
 	c := cors.New(cors.Options{

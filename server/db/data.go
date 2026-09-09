@@ -2,17 +2,34 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
+// ErrScratchoffNotFound is returned when an update or delete targets a
+// scratchoff that doesn't exist or doesn't belong to the requesting user.
+var ErrScratchoffNotFound = errors.New("scratchoff not found")
+
 type ScratchoffData struct {
 	Name   string `json:"Name"`
 	GameID string `json:"GameId"`
 	Prize  string `json:"Prize"`
 	Date   string `json:"Date"`
+}
+
+type ScratchoffUpdateData struct {
+	Id     int64  `json:"Id"`
+	Name   string `json:"Name"`
+	GameID string `json:"GameId"`
+	Prize  string `json:"Prize"`
+	Date   string `json:"Date"`
+}
+
+type ScratchoffDeleteData struct {
+	Id int64 `json:"Id"`
 }
 
 type Scratchoff struct {
@@ -126,6 +143,63 @@ func InsertScratchoff(userID int64, name string, gameID string, prize int64, dat
 	}
 
 	return res.LastInsertId()
+}
+
+func UpdateScratchoff(id int64, userID int64, name string, gameID string, prize int64, date string) error {
+	statement := `
+	UPDATE scratchoffs
+	SET name = ?, game_id = ?, prize = ?, date = ?
+	WHERE id = ? AND user_id = ?
+	`
+
+	stmt, err := userDb.Prepare(statement)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(name, gameID, prize, date, id, userID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrScratchoffNotFound
+	}
+
+	return nil
+}
+
+func DeleteScratchoff(id int64, userID int64) error {
+	statement := `
+	DELETE FROM scratchoffs
+	WHERE id = ? AND user_id = ?
+	`
+
+	stmt, err := userDb.Prepare(statement)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(id, userID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrScratchoffNotFound
+	}
+
+	return nil
 }
 
 func GetScratchoffsByUser(userID int64) ([]Scratchoff, error) {
