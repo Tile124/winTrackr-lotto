@@ -125,7 +125,7 @@ func LoginHandler(rw http.ResponseWriter, r *http.Request) {
 		Name:     "sessionToken",
 		Value:    sessionToken,
 		Expires:  expiresAt,
-		HttpOnly: false,
+		HttpOnly: true,
 		Path:     "/",
 	})
 

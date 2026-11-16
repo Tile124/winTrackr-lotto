@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-public-statistics',
   templateUrl: './public-statistics.component.html',
-  styleUrls: ['./public-statistics.component.scss']
+  styleUrls: ['./public-statistics.component.css']
 })
 export class PublicStatisticsComponent implements OnInit {
   publicStats: any[] = [];
@@ -13,7 +12,7 @@ export class PublicStatisticsComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.http.get(environment.apiURL + '/api/public-statistics').subscribe(
+    this.http.get('http://localhost:3000/api/public-statistics').subscribe(
       (response: any) => {
         this.publicStats = response;
       },
