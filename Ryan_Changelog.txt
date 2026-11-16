@@ -51,20 +51,53 @@ to be created for public and private views.
 ----------------------------------------------------------------------------------------
 
 04/18/2023 - Ryan - 01
-+ Created homepage component in public module
-+ Created public statistics component in public module
-+ Backend: Created a handlers folder
-+ Backend: Created a publicStatistics.go file. This serves the public stats data.
-+ Backend: Created a models folder
-+ Backend: Created a user.go file
-+ Added environment folder in src (ng generate environments)
-+ Added firebase config in enviroment.ts
-+ Imported AngularFireModule/FirestoreModule in app.module.ts
-For further implementation: https://www.securecoding.com/blog/angular-firebase-authentication-integration/
-+ Firebase database created (implementation pending)
-NOTE: winTrackr-current\winTrackr\server>go get firebase.google.com/go/v4
+= Changing structures to these modules: core, shared, public, private.
+= Moved login and registration components to public.
+- Removed modules auth, user, and user-statistics (in archive).
 
 ----------------------------------------------------------------------------------------
 
 04/18/2023 - Ryan - 02
-+ src/app/logged-in/scratch-off-form/scratch-off-form.component.ts
++ Created services folder under core. Includes auth, scratchoff, and statistics service.ts
++ Created guards folder under core. Includes auth.guard.ts
++ Created components folder under shared, public, and private.
++ Created toolbar component under shared.
++ Created homepage component under public.
++ Created public-statistics component component under public.
++ Created scratchoff component under private.
++ Created dashboard component under private.
+
+
+----------------------------------------------------------------------------------------
+
+04/18/2023 - Ryan - 03
+- Removed folders named component under each module.
+= Remade registration component.
++ Remade guard/auth.guard as a guard instead of a file
++ Remade auth, scratchoff, and statistics service as a service instead of a file
++ Updated app-routing
++ Updated app.component.html to be just a router.
+
+Update: login, registration, statistics, scratchoff, and dashboard are now all accessible in browser.
+
+----------------------------------------------------------------------------------------
+
+04/18/2023 - Ryan - 04
++ Fixed issue with package.json. 
+It was impossible to do npm install. After spending 2-3 hours looking for the issue, it was found
+that @angular/core was automatically set to 15.2.7 for some reason. This caused conflicts.
+Fixed by setting relevant entries in package.json and package_lock.json to 15.2.0
+
+----------------------------------------------------------------------------------------
+
+04/18/2023 - Ryan - 05
++ Started work on toolbar
++ Cookie service import
+
+----------------------------------------------------------------------------------------
+.
+.
+.
+Skipping several entries, see git changes if needed.
+
+----------------------------------------------------------------------------------------

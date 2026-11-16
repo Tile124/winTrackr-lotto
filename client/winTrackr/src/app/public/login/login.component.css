@@ -1,0 +1,29 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 60px auto 0; /* 60px top margin to provide space from the menu bar */
+}
+  
+  mat-card {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  mat-form-field {
+    width: 100%;
+  }
+  
+  button {
+    background-color: #FF9800;
+    color: #FFFFFF;
+  }
+  
+  mat-card-title {
+    text-align: center;
+    width: 100%;
+    margin: 0;
+  }
